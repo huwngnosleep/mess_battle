@@ -18,10 +18,76 @@
     
     socket.on('newPositions', (data) => {
         ctx.clearRect(0, 0, 500, 500)
-        for(let i = 0; i < data.length; i ++) {
-            ctx.fillText(data[i].name, data[i].x, data[i].y)
-
+        for(let i = 0; i < data.players.length; i ++) {
+            ctx.fillText(data.players[i].name, data.players[i].x, data.players[i].y)
+        }
+        for(let i = 0; i < data.bullets.length; i ++) {
+            ctx.fillRect(data.players[i].x - 5, data.players[i].y - 5, 10, 10)
         }
     })
+
+    document.onkeydown = (event) => {
+        switch (event.keyCode) {
+            case 68:
+                socket.emit('keyPress', {
+                    inputId: 'right',
+                    state: true,
+                })
+                break;
+            case 83:
+                socket.emit('keyPress', {
+                    inputId: 'down',
+                    state: true,
+                })
+                break;
+            case 65:
+                socket.emit('keyPress', {
+                    inputId: 'left',
+                    state: true,
+                })
+                break;
+            case 87:
+                socket.emit('keyPress', {
+                    inputId: 'up',
+                    state: true,
+                })
+                break;
+                    
+            default:
+                break;
+        }
+    }
+
+    document.onkeyup = (event) => {
+        switch (event.keyCode) {
+            case 68:
+                socket.emit('keyPress', {
+                    inputId: 'right',
+                    state: false,
+                })
+                break;
+            case 83:
+                socket.emit('keyPress', {
+                    inputId: 'down',
+                    state: false,
+                })
+                break;
+            case 65:
+                socket.emit('keyPress', {
+                    inputId: 'left',
+                    state: false,
+                })
+                break;
+            case 87:
+                socket.emit('keyPress', {
+                    inputId: 'up',
+                    state: false,
+                })
+                break;
+                    
+            default:
+                break;
+        }
+    }
 </script>
 </html>

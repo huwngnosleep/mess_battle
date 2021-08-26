@@ -1,5 +1,4 @@
 const express = require('express')
-const socket = require('./socket')
 const app = express()
 const server = require('http').Server(app)
 
@@ -9,40 +8,37 @@ app.get('/', (req, res) => {
 
 app.use('/client', express.static(__dirname + '/client'))
 
-server.listen(2000)
+server.listen(3000)
 console.log('server started')
 
-const players = {}
+const SOCKET_LIST = {}
+const PLAYER_LIST = require('./models/PlayerList')
+const BULLET_LIST = require('./models/BulletList')
+const Player = require('./models/Player')
+
 
 const io = require('socket.io')(server)
-io.sockets.on('connection', (player) => {
-    player.id = Math.random()
-    player.x = 0
-    player.y = 0
-    // get a random name for each player from 1 to 10
-    player.name = "" + Math.floor(10 * Math.random())
-    players[player.id] = player
-    player.on('disconnect', () => {
-        delete players[player.id]
-    })
+io.sockets.on('connection', (socket) => {
+    socket.id = Math.random()
+    SOCKET_LIST[socket.id] = socket
 
+    const player = new Player(socket.id)
+    PLAYER_LIST.list[socket.id] = player
+    player.onConnect(socket)
+
+    socket.on('disconnect', () => {
+        delete SOCKET_LIST[socket.id]
+        player.onDisconnect(socket)
+    })
 })
 
 setInterval(() => {
-    // position of all players
-    const positions = []
-    for (const i in players) {
-        const player = players[i]
-        player.x++
-        player.y++
-        // save position of each player to the list 
-        positions.push({
-            x: player.x,
-            y: player.y,
-            name: player.name,
-        })
+    const positions = {
+        players: PLAYER_LIST.update(),
+        bullets: BULLET_LIST.update(),
     }
-    for (const i in players) {
-        players[i].emit('newPositions', positions)
+
+    for (const i in SOCKET_LIST) {
+        SOCKET_LIST[i].emit('newPositions', positions)
     }
 }, 1000 / 25);
