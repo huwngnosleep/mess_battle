@@ -11,7 +11,6 @@ class Bullet extends Entity {
         this.timer = 0
         this.toRemove = false
 
-        console.log(BULLET_LIST)
         BULLET_LIST.list[this.id] = this
     }
 

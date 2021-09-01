@@ -7,7 +7,7 @@ app.get('/', (req, res) => {
 })
 
 app.use('/client', express.static(__dirname + '/client'))
-
+let DEBUG = true
 server.listen(3000)
 console.log('server started')
 
@@ -29,6 +29,22 @@ io.sockets.on('connection', (socket) => {
     socket.on('disconnect', () => {
         delete SOCKET_LIST[socket.id]
         player.onDisconnect(socket)
+    })
+
+    socket.on('sendMsgToServer', (data) => {
+        const playerName = ("" + socket.id).slice(2, 7)
+        for (const i in SOCKET_LIST) {
+            SOCKET_LIST[i].emit('addToChat', playerName + ': ' + data)
+        }
+    })
+
+    socket.on('evalServer', (data) => {
+        if (!DEBUG) {
+            return
+        }
+
+        const response = eval(data)
+        socket.emit('evalAnswer', response)
     })
 })
 
